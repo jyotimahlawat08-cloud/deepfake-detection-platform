@@ -1,0 +1,13 @@
+# Local Python environments
+venv/
+.venv/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+
+# Runtime-generated uploads
+app/static/uploads/
+
+# Local OneDrive synchronization data
+.tmp.driveupload/

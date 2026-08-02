@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deepfake Detection Platform</title>
+</head>
+<body>
+
+<h1>Deepfake Detection Platform</h1>
+
+<form action="/upload" method="POST" enctype="multipart/form-data">
+
+    <input type="file" name="image">
+
+    <br><br>
+
+    <button type="submit">Predict</button>
+
+</form>
+
+{% if image %}
+
+<h2>Uploaded Image</h2>
+
+<img src="{{ url_for('static', filename='uploads/' + image) }}" width="300">
+
+<h2>Prediction:</h2>
+
+<h1>{{ result }}</h1>
+
+{% endif %}
+
+</body>
+</html>
