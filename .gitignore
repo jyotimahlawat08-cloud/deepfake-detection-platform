@@ -9,5 +9,8 @@ __pycache__/
 # Runtime-generated uploads
 app/static/uploads/
 
+# Model supplied during the Railway build
+/GAN_Model/saved_model/best_xception.keras
+
 # Local OneDrive synchronization data
 .tmp.driveupload/
