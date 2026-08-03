@@ -2,8 +2,6 @@ from flask import Flask, render_template, request
 import os
 import cv2
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.applications.xception import preprocess_input
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -12,9 +10,19 @@ UPLOAD_FOLDER = "app/static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# Load trained model
-# model = load_model("GAN_Model/saved_model/detector.keras")
-model = load_model("GAN_Model/saved_model/best_xception.keras")
+# Load the trained model only when a prediction is requested.
+model = None
+
+
+def get_model():
+    global model
+
+    if model is None:
+        from tensorflow.keras.models import load_model
+
+        model = load_model("GAN_Model/saved_model/best_xception.keras")
+
+    return model
 
 
 @app.route("/")
@@ -48,13 +56,15 @@ def upload():
         return f"Image load nahi hui.\nPath = {filepath}"
 
     # Preprocess image
+    from tensorflow.keras.applications.xception import preprocess_input
+
     img = cv2.resize(img, (299, 299))
     img = np.array(img, dtype=np.float32)
     img = preprocess_input(img)
     img = np.expand_dims(img, axis=0)
 
     # Prediction
-    prediction = model.predict(img, verbose=0)
+    prediction = get_model().predict(img, verbose=0)
     score = float(prediction[0][0])
 
     print("Prediction Score:", score)
