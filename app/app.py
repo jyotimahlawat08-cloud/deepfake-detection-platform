@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import os
+from pathlib import Path
 import cv2
 import numpy as np
 from werkzeug.utils import secure_filename
@@ -12,6 +13,8 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # Load the trained model only when a prediction is requested.
 model = None
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+MODEL_PATH = PROJECT_ROOT / "GAN_Model" / "saved_model" / "best_xception.keras"
 
 
 def get_model():
@@ -20,7 +23,10 @@ def get_model():
     if model is None:
         from tensorflow.keras.models import load_model
 
-        model = load_model("GAN_Model/saved_model/best_xception.keras")
+        if not MODEL_PATH.is_file():
+            raise FileNotFoundError(f"Model file not found: {MODEL_PATH}")
+
+        model = load_model(str(MODEL_PATH))
 
     return model
 
