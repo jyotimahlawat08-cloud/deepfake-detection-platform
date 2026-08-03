@@ -1,2 +1,2 @@
 [build]
-buildCommand = "mkdir -p GAN_Model/saved_model && curl --fail --location --retry 3 --retry-delay 2 --output GAN_Model/saved_model/best_xception.keras https://github.com/jyotimahlawat08-cloud/deepfake-detection-platform/releases/download/untagged-ee3a1a5bd247d80f5187/best_xception.keras && pip install -r requirements.txt"
+buildCommand = "set -e; mkdir -p GAN_Model/saved_model; curl --fail --location --retry 3 --retry-delay 2 --show-error --output GAN_Model/saved_model/best_xception.keras https://github.com/jyotimahlawat08-cloud/deepfake-detection-platform/releases/download/untagged-ee3a1a5bd247d80f5187/best_xception.keras; ls -lh GAN_Model/saved_model/; test -s GAN_Model/saved_model/best_xception.keras; pip install -r requirements.txt"
