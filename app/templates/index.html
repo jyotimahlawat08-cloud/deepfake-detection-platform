@@ -1,33 +1,265 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1120">
     <title>Deepfake Detection Platform</title>
+    <style>
+        :root {
+            --bg: #0b1120;
+            --panel: rgba(20, 31, 54, 0.72);
+            --panel-border: rgba(148, 163, 184, 0.18);
+            --text: #f8fafc;
+            --muted: #a5b4c9;
+            --cyan: #22d3ee;
+            --blue: #3b82f6;
+            --purple: #a855f7;
+            --green: #34d399;
+            --red: #fb7185;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            min-width: 320px;
+            margin: 0;
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            position: fixed;
+            z-index: -1;
+            width: 34rem;
+            height: 34rem;
+            border-radius: 50%;
+            content: "";
+            filter: blur(80px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        body::before { top: -14rem; left: -12rem; background: var(--cyan); }
+        body::after { right: -12rem; bottom: -16rem; background: var(--purple); }
+
+        .shell { width: min(1160px, calc(100% - 2rem)); margin: 0 auto; }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 0;
+            animation: fadeDown 650ms ease both;
+        }
+
+        .brand { display: flex; align-items: center; gap: 0.75rem; font-weight: 750; letter-spacing: -0.02em; }
+
+        .brand-mark {
+            display: grid;
+            width: 2.5rem;
+            height: 2.5rem;
+            place-items: center;
+            border: 1px solid rgba(103, 232, 249, 0.4);
+            border-radius: 0.8rem;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(168, 85, 247, 0.28));
+            box-shadow: 0 0 28px rgba(34, 211, 238, 0.2);
+        }
+
+        .nav-status { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.83rem; }
+        .status-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
+
+        .hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr); gap: 3rem; align-items: center; padding: 4.25rem 0 3.5rem; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.48rem 0.78rem;
+            border: 1px solid rgba(34, 211, 238, 0.27);
+            border-radius: 999px;
+            color: #a5f3fc;
+            background: rgba(8, 145, 178, 0.11);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            animation: fadeUp 700ms 100ms ease both;
+        }
+
+        h1 { max-width: 700px; margin: 1.1rem 0; font-size: clamp(2.65rem, 6vw, 5.6rem); line-height: 0.98; letter-spacing: -0.065em; animation: fadeUp 700ms 180ms ease both; }
+        .gradient-text { background: linear-gradient(100deg, #f8fafc 30%, #67e8f9 62%, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .hero-copy { max-width: 620px; margin: 0; color: var(--muted); font-size: clamp(1rem, 2vw, 1.15rem); line-height: 1.7; animation: fadeUp 700ms 260ms ease both; }
+
+        .ai-orb { position: relative; display: grid; width: min(100%, 360px); aspect-ratio: 1; place-self: center; place-items: center; border-radius: 42% 58% 58% 42% / 42% 42% 58% 58%; background: radial-gradient(circle at 35% 30%, rgba(103, 232, 249, 0.82), rgba(59, 130, 246, 0.25) 31%, rgba(168, 85, 247, 0.15) 56%, transparent 70%); animation: float 5s ease-in-out infinite, fadeIn 900ms 180ms ease both; }
+        .ai-orb::before, .ai-orb::after { position: absolute; border: 1px solid rgba(103, 232, 249, 0.32); border-radius: inherit; content: ""; }
+        .ai-orb::before { inset: 8%; transform: rotate(30deg); }
+        .ai-orb::after { inset: 19%; transform: rotate(-38deg); border-color: rgba(192, 132, 252, 0.45); }
+        .scan-icon { z-index: 1; width: 7rem; color: #e0f2fe; filter: drop-shadow(0 0 24px rgba(34, 211, 238, 0.72)); }
+
+        .glass { border: 1px solid var(--panel-border); border-radius: 1.5rem; background: var(--panel); box-shadow: 0 20px 70px rgba(0, 0, 0, 0.24); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+
+        .model-card { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; overflow: hidden; margin-bottom: 2.25rem; animation: fadeUp 700ms 320ms ease both; }
+        .model-item { min-height: 124px; padding: 1.35rem; background: rgba(15, 23, 42, 0.48); transition: background 200ms ease, transform 200ms ease; }
+        .model-item:hover { background: rgba(30, 41, 59, 0.65); transform: translateY(-3px); }
+        .model-label { display: block; margin-bottom: 0.55rem; color: #94a3b8; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .model-value { font-size: 1.04rem; font-weight: 700; }
+
+        .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 0.82fr); gap: 1.5rem; align-items: start; padding-bottom: 4rem; }
+        .upload-card, .result-card { padding: clamp(1.35rem, 3vw, 2.2rem); animation: fadeUp 750ms 380ms ease both; }
+        .section-kicker { margin: 0 0 0.55rem; color: var(--cyan); font-size: 0.75rem; font-weight: 750; letter-spacing: 0.11em; text-transform: uppercase; }
+        h2 { margin: 0; font-size: clamp(1.55rem, 3vw, 2rem); letter-spacing: -0.04em; }
+        .section-copy { margin: 0.65rem 0 1.5rem; color: var(--muted); line-height: 1.6; }
+
+        .drop-zone { position: relative; display: grid; min-height: 250px; place-items: center; border: 1.5px dashed rgba(103, 232, 249, 0.36); border-radius: 1.2rem; background: linear-gradient(145deg, rgba(8, 47, 73, 0.18), rgba(76, 29, 149, 0.12)); text-align: center; transition: border-color 220ms ease, background 220ms ease, transform 220ms ease; }
+        .drop-zone:hover, .drop-zone:focus-within { border-color: var(--cyan); background: linear-gradient(145deg, rgba(8, 145, 178, 0.18), rgba(126, 34, 206, 0.17)); transform: translateY(-2px); }
+        .upload-icon { width: 3.1rem; height: 3.1rem; padding: 0.7rem; border-radius: 1rem; color: #a5f3fc; background: rgba(34, 211, 238, 0.12); }
+        .drop-title { margin: 0.85rem 0 0.35rem; font-weight: 750; }
+        .drop-subtitle { margin: 0; color: var(--muted); font-size: 0.88rem; }
+        .file-input { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; opacity: 0; }
+        .file-name { min-height: 1.25rem; margin: 0.9rem 0 0; color: #cbd5e1; font-size: 0.86rem; overflow-wrap: anywhere; }
+
+        .submit-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; margin-top: 1.25rem; padding: 0.95rem 1.25rem; border: 0; border-radius: 0.85rem; color: #fff; background: linear-gradient(100deg, #0891b2, #2563eb 50%, #7e22ce); background-size: 180% 100%; box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28); cursor: pointer; font: inherit; font-weight: 750; transition: transform 180ms ease, box-shadow 180ms ease, background-position 350ms ease; }
+        .submit-btn:hover { background-position: 100% 0; box-shadow: 0 16px 35px rgba(124, 58, 237, 0.38); transform: translateY(-2px); }
+        .submit-btn:focus-visible, .file-input:focus-visible + * { outline: 3px solid rgba(103, 232, 249, 0.65); outline-offset: 4px; }
+
+        .empty-result { display: grid; min-height: 355px; place-items: center; color: var(--muted); text-align: center; }
+        .empty-icon { width: 3.5rem; height: 3.5rem; margin: 0 auto 1rem; padding: 0.85rem; border-radius: 50%; color: #94a3b8; background: rgba(148, 163, 184, 0.09); }
+        .empty-result p { max-width: 230px; margin: 0; line-height: 1.6; }
+        .result-card { position: relative; overflow: hidden; }
+        .result-card::after { position: absolute; top: -70px; right: -55px; width: 175px; height: 175px; border-radius: 50%; background: rgba(34, 211, 238, 0.1); content: ""; filter: blur(12px); }
+        .uploaded-image { display: block; width: 100%; max-height: 290px; margin: 1.35rem 0; border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 1rem; object-fit: cover; box-shadow: 0 16px 35px rgba(0, 0, 0, 0.28); }
+        .result-value { margin: 0; padding: 1rem 1.05rem; border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 0.9rem; background: rgba(2, 6, 23, 0.35); color: #e2e8f0; font-size: 1.05rem; font-weight: 700; line-height: 1.65; white-space: pre-line; }
+        .result-value.real { border-color: rgba(52, 211, 153, 0.35); color: #a7f3d0; background: rgba(6, 78, 59, 0.15); }
+        .result-value.fake { border-color: rgba(251, 113, 133, 0.35); color: #fecdd3; background: rgba(136, 19, 55, 0.14); }
+        .result-heading { display: flex; align-items: center; gap: 0.5rem; margin: 1.15rem 0 0.55rem; font-size: 0.83rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
+        .result-heading svg { width: 1rem; }
+
+        footer { padding: 1.75rem 0 2.3rem; border-top: 1px solid rgba(148, 163, 184, 0.12); color: #94a3b8; text-align: center; font-size: 0.86rem; line-height: 1.8; }
+        .footer-names { color: #e2e8f0; font-weight: 700; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-11px) rotate(3deg); } }
+
+        @media (max-width: 760px) {
+            .hero, .workspace { grid-template-columns: 1fr; }
+            .hero { padding: 2.7rem 0 2.2rem; gap: 1.5rem; text-align: center; }
+            .hero-copy { margin-right: auto; margin-left: auto; }
+            .ai-orb { width: 260px; order: -1; }
+            .model-card { grid-template-columns: repeat(2, 1fr); }
+            .model-item { min-height: 105px; }
+            .workspace { padding-bottom: 2.5rem; }
+        }
+
+        @media (max-width: 430px) {
+            .shell { width: min(100% - 1.25rem, 1160px); }
+            .brand { font-size: 0.88rem; }
+            .nav-status { font-size: 0.72rem; }
+            .model-card { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
+    <div class="shell">
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="21" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 4.5 7.2v9.6L12 21l7.5-4.2V7.2L12 3Z"/><path d="m8.4 12 2.3 2.3 4.9-5"/></svg>
+                </span>
+                <span>Deepfake Detection Platform</span>
+            </div>
+            <div class="nav-status"><span class="status-dot"></span> AI system online</div>
+        </nav>
 
-<h1>Deepfake Detection Platform</h1>
+        <main>
+            <section class="hero">
+                <div>
+                    <span class="eyebrow"><span class="status-dot"></span> AI Powered Image Authentication</span>
+                    <h1>Deepfake Detection <span class="gradient-text">Platform</span></h1>
+                    <p class="hero-copy">Detect manipulated and AI-generated facial images using an advanced XceptionNet-based Deep Learning model.</p>
+                </div>
+                <div class="ai-orb" aria-hidden="true">
+                    <svg class="scan-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="7" y="7" width="10" height="10" rx="3"/><path d="M9.5 12h5M12 9.5v5"/></svg>
+                </div>
+            </section>
 
-<form action="/upload" method="POST" enctype="multipart/form-data">
+            <section class="model-card glass" aria-label="Model information">
+                <div class="model-item"><span class="model-label">Model</span><span class="model-value">XceptionNet</span></div>
+                <div class="model-item"><span class="model-label">Framework</span><span class="model-value">TensorFlow + Keras</span></div>
+                <div class="model-item"><span class="model-label">Deployment</span><span class="model-value">Railway Cloud</span></div>
+                <div class="model-item"><span class="model-label">Prediction</span><span class="model-value">Real / Fake</span></div>
+            </section>
 
-    <input type="file" name="image">
+            <section class="workspace">
+                <div class="upload-card glass">
+                    <p class="section-kicker">Image analysis</p>
+                    <h2>Authenticate an image</h2>
+                    <p class="section-copy">Upload an image to begin a secure AI-powered authenticity check.</p>
+                    <form action="/upload" method="POST" enctype="multipart/form-data">
+                        <label class="drop-zone">
+                            <input class="file-input" type="file" name="image" aria-label="Choose an image to analyze">
+                            <span>
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15.5v3A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg>
+                                <span class="drop-title">Drop your image here or browse</span>
+                                <span class="drop-subtitle">Your image is analyzed using XceptionNet</span>
+                            </span>
+                        </label>
+                        <p class="file-name" id="file-name" aria-live="polite">No image selected</p>
+                        <button class="submit-btn" type="submit">
+                            Analyze image
+                            <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                        </button>
+                    </form>
+                </div>
 
-    <br><br>
+                {% if image %}
+                <aside class="result-card glass" aria-live="polite">
+                    <p class="section-kicker">Analysis complete</p>
+                    <h2>Prediction result</h2>
+                    <img class="uploaded-image" src="{{ url_for('static', filename='uploads/' + image) }}" alt="Uploaded image for deepfake analysis">
+                    <p class="result-heading">
+                        {% if 'Real' in result %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>
+                        {% endif %}
+                        Prediction &amp; confidence
+                    </p>
+                    <p class="result-value {% if 'Real' in result %}real{% else %}fake{% endif %}">{{ result }}</p>
+                </aside>
+                {% else %}
+                <aside class="result-card glass empty-result">
+                    <div>
+                        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m7.5 15 2.8-3 2.3 2.4 1.5-1.7L17 16"/><circle cx="9" cy="9" r="1.2"/></svg>
+                        <h2>Ready for analysis</h2>
+                        <p>Your prediction and confidence score will appear here after you upload an image.</p>
+                    </div>
+                </aside>
+                {% endif %}
+            </section>
+        </main>
 
-    <button type="submit">Predict</button>
+        <footer>
+            <div>Developed by <span class="footer-names">Jyoti Mahlawat &amp; Jaishree</span> · B.Tech Computer Science Engineering</div>
+            <div>Powered by Flask • TensorFlow • XceptionNet</div>
+        </footer>
+    </div>
 
-</form>
-
-{% if image %}
-
-<h2>Uploaded Image</h2>
-
-<img src="{{ url_for('static', filename='uploads/' + image) }}" width="300">
-
-<h2>Prediction:</h2>
-
-<h1>{{ result }}</h1>
-
-{% endif %}
-
+    <script>
+        const fileInput = document.querySelector('.file-input');
+        const fileName = document.getElementById('file-name');
+        if (fileInput && fileName) {
+            fileInput.addEventListener('change', () => {
+                fileName.textContent = fileInput.files.length ? fileInput.files[0].name : 'No image selected';
+            });
+        }
+    </script>
 </body>
 </html>
